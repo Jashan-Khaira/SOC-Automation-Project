@@ -470,6 +470,28 @@ Congratulations! TheHive and Wazuh are now configured and operational as expecte
 1. **Add Email App to Workflow:**
    - Drag and drop the email app and connect it to the VirusTotal app.
 
+### Configuration for SMTP Email:
+
+#### Find Action: Send email SMTP
+
+- **SMTP Host:** smtp.office365.com
+- **Port:** 587
+
+- **Username:** \<Your outlook email\>@outlook.com
+- **Password:** \<App password - You can get this through this link - [App Password Link](https://account.live.com/proofs/Manage/additional)\>
+
+- **Recipient:** \<Any email address where you want to send this alert email\>
+
+- **Subject:** Mimikatz Usage Detected!!!
+
+**Body:**
+- Time: $exec.text.win.eventdata.utcTime
+- Title: $exec.title
+- Host: $exec.text.win.system.computer
+
+- **Ssl verify:** True
+
+
 ### Configure Responsive Action in Shuffle
 
 1. **Block Source IPs:**
