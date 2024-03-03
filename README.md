@@ -73,6 +73,10 @@ Our lab environment consists of:
 
 Feel free to explore this setup, adapt it to your needs, and embark on your own SOC learning journey! 🌟
 
+![SOC Automation Network Diagram](https://imgur.com/a/G7ibjol)
+
+
+
 # Installation Commands for Wazuh and TheHive 
 
 ## Specifications
