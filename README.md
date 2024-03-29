@@ -419,6 +419,16 @@ Congratulations! TheHive and Wazuh are now configured and operational as expecte
 3. **Integrate with OSSEC:**
    - Open the ossec.conf file on the Wazuh manager: `nano /var/ossec/etc/ossec.conf`.
    - Add the integration tag under the first global rule, replacing the hook URL with the copied URL from Shuffler Webhook.
+   - Paste the following under the first global rule, replacing the hook URL with the copied URL from Shuffle Webhook:
+ ```bash
+<integration>
+  <name>shuffle</name>
+  <hook_url>https://shuffler.io/api/v1/hooks/webhook_1a37e289-23db-4098-9337-35c2b157488f </hook_url>
+  <rule_id>100002</rule_id>
+  <alert_format>json</alert_format>
+</integration>
+```
+  - Note: Your webhook URL will be different so paste that in the integration tag.
 
 4. **Restart Wazuh Manager Service:**
    ```bash
@@ -494,17 +504,83 @@ Congratulations! TheHive and Wazuh are now configured and operational as expecte
 
 ### Configure Responsive Action in Shuffle
 
-1. **Block Source IPs:**
-   - Allow TCP connections to the Ubuntu machine in the cloud firewall.
-   - Add the http application to the Shuffle workflow and configure it to obtain a JWT token from Wazuh.
+1. **Block Source IPs Attempting to Connect to Ubuntu Machine via SSH:**
+   - Allow all TCP connections to the Ubuntu machine in the cloud FW.
+   - Add an HTTP application to the Shuffle workflow.
 
-2. **Configure Active Response on Wazuh:**
-   - Modify the ossec.conf file to include the active response command.
-   - Restart the Wazuh manager service.
+2. **Workflow:**
+   - **Name:** Get-API
+   - **Find Actions:** Curl
+   - Ensure a firewall rule exists to allow all inbound traffic to Wazuh for port 55000.
+   - Use the Wazuh API to authenticate and obtain a JWT token.
+   
+     ```bash
+     # GET-API (Wazuh for token)
+     curl -u user:PASSWORD -k -X GET "https://<Wazuh-IP>:55000/security/user/authenticate?raw=true"
+     ```
+   
+3. **Drag and Drop Wazuh Application to the Workflow:**
+   - **Find Actions:** Run command
+   - **API Key:** Get-API node
+   - **URL:** https://(Wazuh-IP):55000
+   - **Agent List:** <agent ID>
+   - **Wait for Complete:** True
+   - **Command:** firewall-drop0
+   - **Alert:** `{"data":{"srcip":"8.8.8.8"}}`
 
-3. **Test Active Response:**
-   - Run the Active Response command to block the specified IP.
-   - Verify the blocking on the Ubuntu machine.
+4. **Configure Active Response on Wazuh Console:**
+   - Edit the ossec.conf file:
+     ```bash
+     nano /var/ossec/etc/ossec.conf
+     ```
+   - Add the following at the end of active response commands:
+     ```xml
+     <active-response>
+       <command>firewall-drop</command>
+       <location>local</location>
+       <level>15</level>
+       <timeout>no</timeout>
+     </active-response>
+     ```
+   - Save the file and restart the Wazuh manager:
+     ```bash
+     systemctl restart wazuh-manager
+     ```
+
+5. **View Available Active Responses:**
+   - ```bash
+     cd /var/ossec/bin
+     ls
+     ./agent_control -L
+     ```
+   - Obtain the agent list from the Wazuh dashboard.
+
+6. **Test Active Response:**
+   - Run the following command:
+     ```bash
+     ./agent_control -b 8.8.8.8 -f firewall-drop0 -u 002
+     ```
+   - Start a ping to 8.8.8.8 on the Ubuntu machine before running this command.
+   - Verify if 8.8.8.8 is blocked by active response from Wazuh:
+     ```bash
+     iptables --list
+     ```
+   - Flush iptables if needed:
+     ```bash
+     iptables --flush
+     ```
+   - Check Active Response logs on the Ubuntu machine:
+     ```bash
+     cd /var/ossec/logs/
+     ls
+     cat active-responses.log
+     ```
+
+7. **Setup User Input:**
+   - Go to Trigger and select User Input.
+   - **Email:** Analyst email
+   - **Information:** Would you like to block the source IP: <src IP>
+
 
 ### Workflow:
 
