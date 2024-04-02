@@ -526,7 +526,7 @@ Congratulations! TheHive and Wazuh are now configured and operational as expecte
    - **Agent List:** <agent ID>
    - **Wait for Complete:** True
    - **Command:** firewall-drop0
-   - **Alert:** `{"data":{"srcip":"8.8.8.8"}}`
+   - **Alert:** `{"data":{"srcip":"$exec.all_fields.data.srcip"}}`
 
 4. **Configure Active Response on Wazuh Console:**
    - Edit the ossec.conf file:
