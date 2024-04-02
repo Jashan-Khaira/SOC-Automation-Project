@@ -584,7 +584,7 @@ Congratulations! TheHive and Wazuh are now configured and operational as expecte
 
 ### Workflow:
 
-Wazuh-Alert ---> Get-API ---> VirusTotal --> TheHive ---> Wazuh
+Wazuh-Alert ---> Get-API ---> VirusTotal --> User Input ---> Wazuh ---> TheHive 
                                  
                                 
 ## Conclusion
